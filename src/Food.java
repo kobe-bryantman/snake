@@ -9,4 +9,6 @@
      触发GameEndException（“地图已满”）显示“恭喜通关！地图已无空位”
 */
 public class Food {
+    private int x;
+    private int y;
 }

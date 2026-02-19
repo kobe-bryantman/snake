@@ -24,11 +24,120 @@
  移动边界：行1-20；列1-30
  方法：蛇移动机制：自动移动；初始以固定间隔（初始为200ms/s）
  移动机制拓展：
- 1.通过‘w‘a’‘s’‘d’或‘上’‘下’‘左’‘右’控制；
+ 1.通过‘上’‘下’‘左’‘右’控制；
  2.禁止180度转向
  3.按键立即生效于下一次移动（时间间隔内仅记录最后一次有效方向且必须合法（非180度））
  4，每吃到食物移动间隔减少10ms，下限为100ms
 */
 
+import java.util.LinkedList;
+
 public class Snake {
+    int speed = 200;// 速度，单位为毫秒
+    private boolean isLiving = true; // 蛇是否存活
+    private Direction direction = Direction.RIGHT;
+    private LinkedList<Node> body;
+
+    public boolean isLiving() {
+        return isLiving;
+    }
+
+    public int getSpeed() {
+        return speed;
+    }
+
+    public int getLength() {
+        return body.size();
+    }
+
+    public LinkedList<Node> getBody() {
+        return body;
+    }
+
+    public void setBody(LinkedList<Node> body) {
+        this.body = body;
+    }
+
+    public Snake() {
+        initSnake();
+    }
+
+    private void initSnake() {
+        body = new LinkedList<>();
+        // 初始位置：地图中央（10列，16行），向左延伸
+        body.add(new Node(16, 10));
+        body.add(new Node(15, 10));
+        body.add(new Node(14, 10));
+    }
+
+    // 蛇沿蛇头方向移动
+    public void move() {
+        if (!isLiving) return;
+
+        Node head = body.getFirst();
+        // 新增头节点
+        switch (direction) {
+            case UP:
+                body.addFirst(new Node(head.getX(), head.getY() - 1));
+                break;
+            case DOWN:
+                body.addFirst(new Node(head.getX(), head.getY() + 1));
+                break;
+            case LEFT:
+                body.addFirst(new Node(head.getX() - 1, head.getY()));
+                break;
+            case RIGHT:
+                body.addFirst(new Node(head.getX() + 1, head.getY()));
+                break;
+        }
+        // 删除尾节点（移动逻辑：加头删尾）
+        body.removeLast();
+
+        // 撞墙判断（0-29列，0-19行）
+        head = body.getFirst();
+        if (head.getX() < 0 || head.getY() < 0 || head.getX() >= 30 || head.getY() >= 20) {
+            isLiving = false;
+            return;
+        }
+
+        // 自撞判断
+        for (int i = 1; i < body.size(); i++) {
+            Node node = body.get(i);
+            if (head.getX() == node.getX() && head.getY() == node.getY()) {
+                isLiving = false;
+                break;
+            }
+        }
+    }
+
+    public Direction getDirection() {
+        return direction;
+    }
+
+    public void setDirection(Direction direction) {
+        this.direction = direction;
+    }
+
+    public void eat() {
+        // 吃食物后加头不删尾（变长）
+        Node head = body.getFirst();
+        switch (direction) {
+            case UP:
+                body.addFirst(new Node(head.getX(), head.getY() - 1));
+                break;
+            case DOWN:
+                body.addFirst(new Node(head.getX(), head.getY() + 1));
+                break;
+            case LEFT:
+                body.addFirst(new Node(head.getX() - 1, head.getY()));
+                break;
+            case RIGHT:
+                body.addFirst(new Node(head.getX() + 1, head.getY()));
+                break;
+        }
+        // 速度提升（下限100ms）
+        if (this.speed > 100) {
+            this.speed -= 10;
+        }
+    }
 }
